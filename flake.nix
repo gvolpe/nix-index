@@ -9,14 +9,23 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-compat }:
+  outputs = { self, nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
       systems = [ "x86_64-linux" "x86_64-darwin" "aarch64-darwin" "aarch64-linux" ];
       forAllSystems = lib.genAttrs systems;
       nixpkgsFor = nixpkgs.legacyPackages;
     in
-    {
+    rec {
+      homeManagerModules = forAllSystems (system: {
+        default = {
+          imports = [
+            ./modules/hm.nix
+            { nixpkgs.overlays = [ (f: p: { nix-index = packages.${system}.default; }) ]; }
+          ];
+        };
+      });
+
       packages = forAllSystems (system: {
         default = with nixpkgsFor.${system}; rustPlatform.buildRustPackage {
           pname = "nix-index";
@@ -52,10 +61,11 @@
       });
 
       checks = forAllSystems (system:
-          let
-            packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self.packages.${system};
-            devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self.devShells.${system};
-          in packages // devShells
+        let
+          packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self.packages.${system};
+          devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self.devShells.${system};
+        in
+        packages // devShells
       );
 
       devShells = forAllSystems (system: {

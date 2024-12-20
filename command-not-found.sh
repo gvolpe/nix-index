@@ -1,5 +1,8 @@
 #!/bin/sh
 
+home_manager=${USE_HOME_MANAGER:=false}
+nix_command=${USE_NIX_COMMAND:=false}
+
 # for bash 4
 # this will be called when a command is entered
 # but not found in the user’s path + environment
@@ -43,7 +46,7 @@ command_not_found_handle () {
 The program '$cmd' is currently not installed. It is provided by
 the package '$toplevel.$attrs', which I will now install for you.
 EOF
-                if [ -e "$HOME/.nix-profile/manifest.json" ]; then
+                if [ -e "$HOME/.nix-profile/manifest.json" ] || [ $nix_command ]; then
                     nix profile install $toplevel#$attrs
                 else
                     nix-env -iA $toplevel.$attrs
@@ -71,14 +74,24 @@ $cmd: command not found
 EOF
                 fi
             else
-                if [ -e "$HOME/.nix-profile/manifest.json" ]; then
+                if [ -e "$HOME/.nix-profile/manifest.json" ] || [ $nix_command ]; then
                     >&2 cat <<EOF
-The program '$cmd' is currently not installed. You can install it
-by typing:
-  nix profile install $toplevel#$attrs
+The program '$cmd' is currently not installed.
+
+EOF
+
+                if [ $home_manager ]; then
+                   echo "You can install it by adding the following to your Home Manager configuration:"
+                   >&2 echo "  home.packages = [ pkgs.${attrs%.*} ];"
+                else
+                   echo "You can install it by typing:"
+                   >&2 echo "  nix profile install $toplevel#$attrs"
+                fi
+
+                    >&2 cat <<EOF
 
 Or run it once with:
-  nix shell $toplevel#$attrs -c $cmd ...
+  nix run $toplevel#$attrs
 EOF
                 else
                     >&2 cat <<EOF
@@ -94,15 +107,24 @@ EOF
             ;;
         *)
             >&2 cat <<EOF
-The program '$cmd' is currently not installed. It is provided by
-several packages. You can install it by typing one of the following:
+The program '$cmd' is currently not installed. It is provided by several packages.
+
 EOF
+
+            if [ $home_manager ]; then
+               echo "You can install it by adding one of the following to your Home Manager configuration:"
+            fi
 
             # ensure we get each element of attrs
             # in a cross platform way
             while read attr; do
-                if [ -e "$HOME/.nix-profile/manifest.json" ]; then
-                    >&2 echo "  nix profile install $toplevel#$attr"
+                if [ -e "$HOME/.nix-profile/manifest.json" ] || [ $nix_command ]; then
+                    if [ $home_manager ]; then
+                       >&2 echo "  home.packages = [ pkgs.${attr%.*} ];"
+                    else
+                       echo "You can install it by typing one of the following:"
+                       >&2 echo "  nix profile install $toplevel#$attr"
+                    fi
                 else
                     >&2 echo "  nix-env -iA $toplevel.$attr"
                 fi
@@ -114,8 +136,8 @@ Or run it once with:
 EOF
 
             while read attr; do
-                if [ -e "$HOME/.nix-profile/manifest.json" ]; then
-                    >&2 echo "  nix shell $toplevel#$attr -c $cmd ..."
+                if [ -e "$HOME/.nix-profile/manifest.json" ] || [ $nix_command ]; then
+                    >&2 echo "  nix run $toplevel#$attr"
                 else
                     >&2 echo "  nix-shell -p $attr --run '$cmd ...'"
                 fi

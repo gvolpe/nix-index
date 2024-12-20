@@ -1,6 +1,6 @@
 #!/bin/sh
 
-home_manager=${USE_NIX_COMMAND:=false}
+home_manager=${USE_HOME_MANAGER:=false}
 nix_command=${USE_NIX_COMMAND:=false}
 
 # for bash 4

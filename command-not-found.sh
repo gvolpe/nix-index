@@ -81,7 +81,7 @@ The program '$cmd' is currently not installed.
 EOF
 
                 if [ $home_manager ]; then
-                   echo "You can install it by adding one of the following to your Home Manager configuration:"
+                   echo "You can install it by adding the following to your Home Manager configuration:"
                    >&2 echo "  home.packages = [ pkgs.${attrs%.*} ];"
                 else
                    echo "You can install it by typing:"

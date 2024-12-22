@@ -16,6 +16,26 @@
         "type": "github"
       }
     },
+    "nix-index-database": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1734886205,
+        "narHash": "sha256-vaODlEr6aOLEmbhPrQ8j5xWr8UHcXbZx2ulvBIDMf5w=",
+        "owner": "gvolpe",
+        "repo": "nix-index-database",
+        "rev": "07f7fcb8de6ee50a472a119a02616fb1ed67a25f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gvolpe",
+        "repo": "nix-index-database",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1713248628,
@@ -34,6 +54,7 @@
     "root": {
       "inputs": {
         "flake-compat": "flake-compat",
+        "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs"
       }
     }

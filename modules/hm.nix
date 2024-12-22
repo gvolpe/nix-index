@@ -5,6 +5,13 @@ let
   useHomeManager = "export USE_HOME_MANAGER=true";
   useNixCommand =
     lib.optionalString cfg.enableNixCommand "export USE_NIX_COMMAND=true";
+
+  wrapper = pkgs.callPackage ./nix-index-wrapper.nix {
+    nix-index = cfg.package;
+    nix-index-database = cfg.database;
+  };
+
+  finalPackage = if cfg.database != null then wrapper else cfg.package;
 in
 {
   meta.maintainers = with lib.hm.maintainers; [ ambroisie gvolpe ];
@@ -34,6 +41,12 @@ in
     enableNixCommand = mkEnableOption "Enable Nix command suggestions (flakes)" // {
       default = false;
     };
+
+    database = mkOption {
+      type = types.package;
+      defaultText = literalExpression "pkgs.nix-index-database";
+      description = "The generated database, e.g. from nix-index-database";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -49,7 +62,7 @@ in
       in
       [ (checkOpt "enableBashIntegration") (checkOpt "enableZshIntegration") ];
 
-    home.packages = [ cfg.package ];
+    home.packages = [ finalPackage ];
 
     programs.bash.initExtra = lib.mkIf cfg.enableBashIntegration ''
       ${useHomeManager}

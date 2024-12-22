@@ -3,8 +3,14 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+
+    nix-index-database = {
+      url = github:gvolpe/nix-index-database;
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-compat = {
-      url = "github:edolstra/flake-compat";
+      url = github:edolstra/flake-compat;
       flake = false;
     };
   };
@@ -26,7 +32,7 @@
         };
       });
 
-      packages = forAllSystems (system: {
+      packages = forAllSystems (system: rec {
         default = with nixpkgsFor.${system}; rustPlatform.buildRustPackage {
           pname = "nix-index";
           inherit ((lib.importTOML ./Cargo.toml).package) version;
@@ -57,6 +63,16 @@
             license = with licenses; [ bsd3 ];
             maintainers = [ maintainers.bennofs ];
           };
+        };
+
+        nix-index-with-db = nixpkgsFor.${system}.callPackage ./modules/nix-index-wrapper.nix {
+          nix-index = default;
+          nix-index-database = self.inputs.nix-index-database.packages.${system}.nix-index-database;
+        };
+
+        nix-index-with-small-db = nixpkgsFor.${system}.callPackage ./modules/nix-index-wrapper.nix {
+          nix-index = default;
+          nix-index-database = self.inputs.nix-index-database.packages.${system}.nix-index-small-database;
         };
       });
 

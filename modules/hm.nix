@@ -67,13 +67,13 @@ in
     programs.bash.initExtra = lib.mkIf cfg.enableBashIntegration ''
       ${useHomeManager}
       ${useNixCommand}
-      source ${cfg.package}/etc/profile.d/command-not-found.sh
+      source ${finalPackage}/etc/profile.d/command-not-found.sh
     '';
 
     programs.zsh.initExtra = lib.mkIf cfg.enableZshIntegration ''
       ${useHomeManager}
       ${useNixCommand}
-      source ${cfg.package}/etc/profile.d/command-not-found.sh
+      source ${finalPackage}/etc/profile.d/command-not-found.sh
     '';
 
     # See https://github.com/bennofs/nix-index/issues/126
@@ -83,7 +83,7 @@ in
           #!${pkgs.bash}/bin/bash
           ${useHomeManager}
           ${useNixCommand}
-          source ${cfg.package}/etc/profile.d/command-not-found.sh
+          source ${finalPackage}/etc/profile.d/command-not-found.sh
           command_not_found_handle "$@"
         '';
       in

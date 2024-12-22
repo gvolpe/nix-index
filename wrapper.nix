@@ -20,7 +20,8 @@ symlinkJoin {
     substitute \
      "${nix-index}/etc/profile.d/command-not-found.sh" \
      "$out/etc/profile.d/command-not-found.sh" \
-     --replace-fail "${nix-index}" "$out"  '';
+     --replace-fail "${nix-index}" "$out"  
+  '';
 
   meta.mainProgram = "nix-locate";
 }

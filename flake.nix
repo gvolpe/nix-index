@@ -22,17 +22,17 @@
       forAllSystems = lib.genAttrs systems;
       nixpkgsFor = nixpkgs.legacyPackages;
     in
-    rec {
+    {
       homeManagerModules = forAllSystems (system: {
         default = {
           imports = [
             ./modules/hm.nix
-            { nixpkgs.overlays = [ (f: p: { nix-index = packages.${system}.default; }) ]; }
+            { nixpkgs.overlays = [ (f: p: { nix-index = self.packages.${system}.default; }) ]; }
           ];
         };
       });
 
-      packages = forAllSystems (system: rec {
+      packages = forAllSystems (system: {
         default = with nixpkgsFor.${system}; rustPlatform.buildRustPackage {
           pname = "nix-index";
           inherit ((lib.importTOML ./Cargo.toml).package) version;
@@ -65,13 +65,13 @@
           };
         };
 
-        nix-index-with-db = nixpkgsFor.${system}.callPackage ./modules/nix-index-wrapper.nix {
-          nix-index = default;
-          nix-index-database = self.inputs.nix-index-database.packages.${system}.nix-index-database;
+        nix-index-with-db = nixpkgsFor.${system}.callPackage ./wrapper.nix {
+          nix-index = self.packages.${system}.default;
+          inherit (self.inputs.nix-index-database.packages.${system}) nix-index-database;
         };
 
-        nix-index-with-small-db = nixpkgsFor.${system}.callPackage ./modules/nix-index-wrapper.nix {
-          nix-index = default;
+        nix-index-with-small-db = nixpkgsFor.${system}.callPackage ./wrapper.nix {
+          nix-index = self.packages.${system}.default;
           nix-index-database = self.inputs.nix-index-database.packages.${system}.nix-index-small-database;
         };
       });

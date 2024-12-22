@@ -6,7 +6,7 @@ let
   useNixCommand =
     lib.optionalString cfg.enableNixCommand "export USE_NIX_COMMAND=true";
 
-  wrapper = pkgs.callPackage ./nix-index-wrapper.nix {
+  wrapper = pkgs.callPackage ../wrapper.nix {
     nix-index = cfg.package;
     nix-index-database = cfg.database;
   };

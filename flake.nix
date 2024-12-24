@@ -32,6 +32,12 @@
         };
       });
 
+      overlays = forAllSystems (system: {
+        default = f: p: {
+          nix-index = self.packages.${system}.default;
+        };
+      });
+
       packages = forAllSystems (system: {
         default = with nixpkgsFor.${system}; rustPlatform.buildRustPackage {
           pname = "nix-index";
